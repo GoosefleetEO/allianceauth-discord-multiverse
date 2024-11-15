@@ -67,7 +67,7 @@ class DiscordManagedServerQuerySet(models.QuerySet):
                         )
                     )
                 )
-            except DoesNotExist:
+            except EveCorporationInfo.DoesNotExist:
                 pass
                 
             # Alliance access if part of an alliance
@@ -80,7 +80,7 @@ class DiscordManagedServerQuerySet(models.QuerySet):
                             )
                         )
                     )
-            except DoesNotExist:
+            except EveAllianceInfo.DoesNotExist:
                 pass
 
             # Faction access if part of a faction
@@ -93,7 +93,7 @@ class DiscordManagedServerQuerySet(models.QuerySet):
                             )
                         )
                     )
-            except DoesNotExist:
+            except EveFactionInfo.DoesNotExist:
                 pass
 
             logger.debug(
