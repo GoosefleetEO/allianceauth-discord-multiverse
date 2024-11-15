@@ -140,7 +140,13 @@ class MultiDiscordUserManager(models.Manager):
         Returns: True on success, else False or raises exception
         """
         try:
-            nickname = self.user_formatted_nick(user, guild)
+
+            if guild.sync_names:
+                nickname = self.user_formatted_nick(user, guild)
+            else:
+                nickname = None
+
+
             group_names = self.user_group_names(
                 user=user,
                 groups_included=guild.get_all_roles_to_sync(),
