@@ -16,7 +16,6 @@ from .app_settings import (DISCORD_APP_ID, DISCORD_APP_SECRET,
 from .discord_client import DiscordClient
 from .discord_client.exceptions import (DiscordApiBackoff,
                                         DiscordClientException)
-from .discord_client.helpers import match_or_create_roles_from_names
 
 from .core import calculate_roles_for_user, create_bot_client
 from .core import group_to_role as core_group_to_role
