@@ -169,7 +169,7 @@ class MultiDiscordUserManager(models.Manager):
             )
 
 
-            user_id = discord_user['id']
+            user_id = discord_user.id
 
             if user.is_superuser or user.has_perm('aadiscordmultiverse.access_all_discords'):
                 logger.debug(
