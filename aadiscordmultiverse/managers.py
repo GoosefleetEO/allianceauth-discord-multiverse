@@ -282,14 +282,6 @@ class MultiDiscordUserManager(models.Manager):
                 )
                 return True
 
-            else:
-                logger.warning(
-                    "Failed to add user %s with Discord ID %s to Discord server",
-                    user,
-                    user_id,
-                )
-                return False
-
         except (HTTPError, ConnectionError, DiscordApiBackoff) as ex:
             logger.exception(
                 'Failed to add user %s to Discord server: %s', user, ex
