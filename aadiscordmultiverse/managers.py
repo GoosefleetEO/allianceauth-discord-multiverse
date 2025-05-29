@@ -350,7 +350,6 @@ class MultiDiscordUserManager(models.Manager):
         oauth = OAuth2Session(
             DISCORD_APP_ID, redirect_uri=DISCORD_CALLBACK_URL)
         token = oauth.fetch_token(
-        token = oauth.fetch_token(
             DiscordClient.DISCORD_OAUTH_TOKEN_URL,
             client_secret=DISCORD_APP_SECRET,
             code=authorization_code
