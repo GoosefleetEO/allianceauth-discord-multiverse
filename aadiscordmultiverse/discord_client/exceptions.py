@@ -1,23 +1,26 @@
+"""Custom exceptions for the Discord Client package."""
+
 import math
 
 
 class DiscordClientException(Exception):
-    """Base Exception for the Discord client"""
+    """Base Exception for the Discord client."""
 
 
 class DiscordApiBackoff(DiscordClientException):
-    """Exception signaling we need to backoff from sending requests to the API for now
+    """Exception signaling we need to backoff from sending requests to the API for now.
+
+    Args:
+        retry_after: time to retry after in milliseconds
     """
 
     def __init__(self, retry_after: int):
-        """
-        :param retry_after: int time to retry after in milliseconds
-        """
         super().__init__()
         self.retry_after = int(retry_after)
 
     @property
     def retry_after_seconds(self):
+        """Time to retry after in seconds."""
         return math.ceil(self.retry_after / 1000)
 
 
