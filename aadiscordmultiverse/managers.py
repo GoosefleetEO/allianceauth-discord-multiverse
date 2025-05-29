@@ -18,6 +18,10 @@ from .discord_client.exceptions import (DiscordApiBackoff,
                                         DiscordClientException)
 from .discord_client.helpers import match_or_create_roles_from_names
 
+from .core import calculate_roles_for_user, create_bot_client
+from .core import group_to_role as core_group_to_role
+from .core import server_name as core_server_name
+
 logger = logging.getLogger(__name__)
 
 
@@ -153,24 +157,20 @@ class MultiDiscordUserManager(models.Manager):
         """
         try:
 
-            if guild.sync_names:
-                nickname = self.user_formatted_nick(user, guild)
-            else:
-                nickname = None
-
+            nickname = self.user_formatted_nick(user, guild) if guild.sync_names else None
+            access_token = self._exchange_auth_code_for_token(authorization_code)
+            user_client = DiscordClient(access_token, is_rate_limited=is_rate_limited)
+            discord_user = user_client.current_user()
+            bot_client = self._bot_client(is_rate_limited=is_rate_limited)
 
             group_names = self.user_group_names(
                 user=user,
                 groups_included=guild.get_all_roles_to_sync(),
                 state_name=user.profile.state.name
             )
-            access_token = self._exchange_auth_code_for_token(
-                authorization_code)
-            user_client = DiscordClient(
-                access_token, is_rate_limited=is_rate_limited)
-            discord_user = user_client.current_user()
+
+
             user_id = discord_user['id']
-            bot_client = self._bot_client(is_rate_limited=is_rate_limited)
 
             if user.is_superuser or user.has_perm('aadiscordmultiverse.access_all_discords'):
                 logger.debug(
@@ -222,49 +222,49 @@ class MultiDiscordUserManager(models.Manager):
                 )
                 return False
 
-            if group_names:
-                role_ids = match_or_create_roles_from_names(
-                    client=bot_client,
-                    guild_id=guild.guild_id,
-                    role_names=group_names
-                ).ids()
-            else:
-                role_ids = None
-
-            created = bot_client.add_guild_member(
-                guild_id=guild.guild_id,
-                user_id=user_id,
-                access_token=access_token,
-                role_ids=role_ids,
-                nick=nickname
+            roles, changed = calculate_roles_for_user(
+                user=user, client=bot_client, discord_uid=discord_user.id, guild_id=guild.guild_id
             )
-            if created is not False:
-                if created is None:
-                    logger.debug(
-                        "User %s with Discord ID %s is already a member. Forcing a Refresh",
+            
+            if changed is None:
+
+                created = bot_client.add_guild_member(
+                    guild_id=guild.guild_id,
+                    user_id=user_id,
+                    access_token=access_token,
+                    role_ids=list(roles.ids()),
+                    nick=nickname
+                )
+                if not created:
+                    logger.warning(
+                        "Failed to add user %s with Discord ID %s to Discord server",
+                        user,
+                        discord_user.id,
+                    )
+                    return False
+            else:
+                
+                logger.debug(
+                    "User %s with Discord ID %s is already a member. Forcing a Refresh",
+                    user,
+                    user_id,
+                )
+
+                updated = bot_client.modify_guild_member(
+                    guild_id=guild.guild_id,
+                    user_id=user_id,
+                    role_ids=list(roles.ids()),
+                    nick=nickname
+                )
+
+                if not updated:
+                    # Could not update the new user so fail.
+                    logger.warning(
+                        "Failed to add user %s with Discord ID %s to Discord server",
                         user,
                         user_id,
                     )
-
-                    # Force an update cause the discord API won't do it for us.
-                    if role_ids:
-                        role_ids = list(role_ids)
-
-                    updated = bot_client.modify_guild_member(
-                        guild_id=guild.guild_id,
-                        user_id=user_id,
-                        role_ids=role_ids,
-                        nick=nickname
-                    )
-
-                    if not updated:
-                        # Could not update the new user so fail.
-                        logger.warning(
-                            "Failed to add user %s with Discord ID %s to Discord server",
-                            user,
-                            user_id,
-                        )
-                        return False
+                    return False
 
                 self.update_or_create(
                     user=user,
@@ -276,6 +276,7 @@ class MultiDiscordUserManager(models.Manager):
                         'activated': now()
                     }
                 )
+                
                 logger.info(
                     "Added user %s with Discord ID %s to Discord server", user, user_id
                 )
