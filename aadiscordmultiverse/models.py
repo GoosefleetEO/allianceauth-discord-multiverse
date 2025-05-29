@@ -11,8 +11,14 @@ from django.db import models
 from django.utils.translation import gettext_lazy
 from requests.exceptions import HTTPError
 
-from .discord_client import DiscordApiBackoff, DiscordClient, DiscordRoles
-from .discord_client.helpers import match_or_create_roles_from_names
+from .core import (
+    create_bot_client,
+    default_bot_client,
+    calculate_roles_for_user,
+    user_formatted_nick
+)
+
+from .discord_client import DiscordApiBackoff, DiscordClient
 from .managers import DiscordManagedServerManager, MultiDiscordUserManager
 
 logger = logging.getLogger(__name__)
@@ -198,65 +204,20 @@ class MultiDiscordUser(models.Model):
         - False on error or raises exception
         """
         client = MultiDiscordUser.objects._bot_client()
-        member_roles = self._determine_member_roles(client)
-        if member_roles is None:
-            return None
-        return self._update_roles_if_needed(client, state_name, member_roles)
-
-    def _determine_member_roles(self, client: DiscordClient) -> DiscordRoles:
-        """Determine the roles of the current member / user."""
-        member_info = client.guild_member(
-            guild_id=self.guild_id, user_id=self.uid)
-        if member_info is None:
-            return None  # User is no longer a member
-        guild_roles = DiscordRoles(client.guild_roles(guild_id=self.guild_id))
-        logger.debug('Current guild roles: %s', guild_roles.ids())
-        if 'roles' in member_info:
-            if not guild_roles.has_roles(member_info['roles']):
-                guild_roles = DiscordRoles(
-                    client.guild_roles(guild_id=self.guild_id, use_cache=False)
-                )
-                if not guild_roles.has_roles(member_info['roles']):
-                    raise RuntimeError(
-                        'Member {} has unknown roles: {}'.format(
-                            self.user,
-                            set(member_info['roles']).difference(
-                                guild_roles.ids())
-                        )
-                    )
-            return guild_roles.subset(member_info['roles'])
-        raise RuntimeError('member_info from %s is not valid' % self.user)
-
-    def _update_roles_if_needed(
-        self, client: DiscordClient, state_name: str, member_roles: DiscordRoles
-    ) -> bool:
-        """Update the roles of this member/user if needed."""
-        requested_roles = match_or_create_roles_from_names(
+        new_roles, is_changed = calculate_roles_for_user(
+            user=self.user,
             client=client,
-            guild_id=self.guild_id,
-            role_names=MultiDiscordUser.objects.user_group_names(
-                user=self.user,
-                groups_included=self.guild.get_all_roles_to_sync(),
-                state_name=state_name
-            )
+            discord_uid=self.uid,
+            guild_id=self.guild.guild_id,
+            state_name=state_name
         )
-        logger.debug(
-            'Requested roles for user %s: %s', self.user, requested_roles.ids()
-        )
-        logger.debug('Current roles user %s: %s',
-                     self.user, member_roles.ids())
-        reserved_role_names = ReservedGroupName.objects.values_list(
-            "name", flat=True)
-        member_roles_reserved = member_roles.subset(
-            role_names=reserved_role_names)
-        member_roles_managed = member_roles.subset(managed_only=True)
-        member_roles_persistent = member_roles_managed.union(
-            member_roles_reserved)
-        if requested_roles != member_roles.difference(member_roles_persistent):
+        if is_changed is None:
+            logger.debug('User is not a member of this guild %s', self.user)
+            return None
+        if is_changed:
             logger.debug('Need to update roles for user %s', self.user)
-            new_roles = requested_roles.union(member_roles_persistent)
             success = client.modify_guild_member(
-                guild_id=self.guild_id,
+                guild_id=self.guild.guild_id,
                 user_id=self.uid,
                 role_ids=list(new_roles.ids())
             )
@@ -267,6 +228,8 @@ class MultiDiscordUser(models.Model):
             return success
         logger.info('No need to update roles for user %s', self.user)
         return True
+
+    
 
     def update_username(self) -> bool:
         """Updates the username incl. the discriminator
