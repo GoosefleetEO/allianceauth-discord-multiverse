@@ -91,7 +91,7 @@ def user_formatted_nick(user: User) -> Optional[str]:
     return None
 
 
-def group_to_role(group: Group,guild_id: int) -> Optional[Role]:
+def group_to_role(group: Group, guild_id: int) -> Optional[Role]:
     """Fetch the Discord role matching the given Django group by name.
 
     Returns:
@@ -102,7 +102,7 @@ def group_to_role(group: Group,guild_id: int) -> Optional[Role]:
     )
 
 
-def server_name(use_cache: bool = True, guild_id: int) -> str:
+def server_name(guild_id: int, use_cache: bool = True) -> str:
     """Fetches the name of the current Discord server.
 
     Args:
