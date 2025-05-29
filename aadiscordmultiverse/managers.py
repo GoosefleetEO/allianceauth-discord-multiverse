@@ -222,7 +222,7 @@ class MultiDiscordUserManager(models.Manager):
                 return False
 
             roles, changed = calculate_roles_for_user(
-                user=user, client=bot_client, discord_uid=discord_user.id, guild_id=guild.guild_id
+                user=user, client=bot_client, discord_uid=discord_user.id, guild_id=guild.guild_id, groups=group_names
             )
             
             if changed is None:

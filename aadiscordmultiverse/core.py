@@ -36,6 +36,7 @@ def calculate_roles_for_user(
     client: DiscordClient,
     discord_uid: int,
     guild_id: int,
+    groups,
     state_name: str = None
 ) -> Tuple[RolesSet, Optional[bool]]:
     """Calculate current Discord roles for an Auth user.
@@ -50,7 +51,7 @@ def calculate_roles_for_user(
     """
     roles_calculated = client.match_or_create_roles_from_names_2(
         guild_id=guild_id,
-        role_names=_user_group_names(user=user, state_name=state_name),
+        role_names=groups,
     )
     logger.debug("Calculated roles for user %s: %s", user, roles_calculated.ids())
     roles_current = client.guild_member_roles(
@@ -67,15 +68,6 @@ def calculate_roles_for_user(
     if roles_calculated == roles_current.difference(roles_persistent):
         return roles_calculated, False
     return roles_calculated.union(roles_persistent), True
-
-
-def _user_group_names(user: User, state_name: str = None) -> List[str]:
-    """Names of groups and state the given user is a member of."""
-    if not state_name:
-        state_name = user.profile.state.name
-    group_names = [group.name for group in user.groups.all()] + [state_name]
-    logger.debug("Group names for roles updates of user %s are: %s", user, group_names)
-    return group_names
 
 
 def user_formatted_nick(user: User) -> Optional[str]:
