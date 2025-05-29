@@ -335,14 +335,14 @@ class MultiDiscordUserManager(models.Manager):
             'permissions': str(cls.BOT_PERMISSIONS)
 
         })
-        return f'{DiscordClient.OAUTH_BASE_URL}?{params}'
+        return f'{DiscordClient.DISCORD_OAUTH_BASE_URL}?{params}'
 
     def generate_oauth_redirect_url(self, guild_id) -> str:
         oauth = OAuth2Session(
             DISCORD_APP_ID, redirect_uri=DISCORD_CALLBACK_URL, scope=self.SCOPES
         )
         url, state = oauth.authorization_url(
-            DiscordClient.OAUTH_BASE_URL, state=guild_id)
+            DiscordClient.DISCORD_OAUTH_BASE_URL, state=guild_id)
         return url
 
     @staticmethod
@@ -350,7 +350,8 @@ class MultiDiscordUserManager(models.Manager):
         oauth = OAuth2Session(
             DISCORD_APP_ID, redirect_uri=DISCORD_CALLBACK_URL)
         token = oauth.fetch_token(
-            DiscordClient.OAUTH_TOKEN_URL,
+        token = oauth.fetch_token(
+            DiscordClient.DISCORD_OAUTH_TOKEN_URL,
             client_secret=DISCORD_APP_SECRET,
             code=authorization_code
         )
