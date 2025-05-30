@@ -204,12 +204,21 @@ class MultiDiscordUser(models.Model):
         - False on error or raises exception
         """
         client = MultiDiscordUser.objects._bot_client()
+        if not state_name:
+            state_name = self.user.profile.state.name
+
+        groups_included = self.guild.get_all_roles_to_sync()
+        group_names = (
+            list(
+                    self.user.groups.filter(id__in=groups_included.values_list("id", flat=True))
+            ) + [state_name])
+
         new_roles, is_changed = calculate_roles_for_user(
             user=self.user,
             client=client,
             discord_uid=self.uid,
             guild_id=self.guild.guild_id,
-            state_name=state_name
+            groups=group_names
         )
         if is_changed is None:
             logger.debug('User is not a member of this guild %s', self.user)

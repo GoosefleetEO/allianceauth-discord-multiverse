@@ -36,7 +36,7 @@ def calculate_roles_for_user(
     client: DiscordClient,
     discord_uid: int,
     guild_id: int,
-    groups,
+    groups: list,
     state_name: str = None
 ) -> Tuple[RolesSet, Optional[bool]]:
     """Calculate current Discord roles for an Auth user.
