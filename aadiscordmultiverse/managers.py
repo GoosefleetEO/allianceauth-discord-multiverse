@@ -241,6 +241,7 @@ class MultiDiscordUserManager(models.Manager):
                         discord_user.id,
                     )
                     return False
+                    
             else:
                 
                 logger.debug(
@@ -259,27 +260,27 @@ class MultiDiscordUserManager(models.Manager):
                 if not updated:
                     # Could not update the new user so fail.
                     logger.warning(
-                        "Failed to add user %s with Discord ID %s to Discord server",
+                        "Failed to update user %s with Discord ID %s on Discord server",
                         user,
                         user_id,
                     )
                     return False
 
-                self.update_or_create(
-                    user=user,
-                    guild=guild,
-                    defaults={
-                        'uid': user_id,
-                        'username': discord_user.username[:32],
-                        'discriminator': discord_user.discriminator[:4],
-                        'activated': now()
-                    }
-                )
+            self.update_or_create(
+                user=user,
+                guild=guild,
+                defaults={
+                    'uid': user_id,
+                    'username': discord_user.username[:32],
+                    'discriminator': discord_user.discriminator[:4],
+                    'activated': now()
+                }
+            )
                 
-                logger.info(
-                    "Added user %s with Discord ID %s to Discord server", user, user_id
-                )
-                return True
+            logger.info(
+                "Added user %s with Discord ID %s to Discord server", user, user_id
+            )
+            return True
 
         except (HTTPError, ConnectionError, DiscordApiBackoff) as ex:
             logger.exception(
