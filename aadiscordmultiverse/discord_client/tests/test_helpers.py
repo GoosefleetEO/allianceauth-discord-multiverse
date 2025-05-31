@@ -1,169 +1,201 @@
-from unittest import TestCase
+from allianceauth.utils.testing import NoSocketsTestCase
 
-from .. import DiscordRoles
-from . import (ALL_ROLES, ROLE_ALPHA, ROLE_BRAVO, ROLE_CHARLIE, ROLE_CHARLIE_2,
-               ROLE_MIKE, create_role)
-
-MODULE_PATH = 'aadiscordmultiverse.discord_client.client'
+from ..helpers import RolesSet
+from .factories import create_matched_role, create_role
 
 
-class TestDiscordRoles(TestCase):
-
-    def setUp(self):
-        self.all_roles = DiscordRoles(ALL_ROLES)
-
+class TestRolesSet(NoSocketsTestCase):
     def test_can_create_simple(self):
-        roles_raw = [ROLE_ALPHA]
-        roles = DiscordRoles(roles_raw)
+        # given
+        roles_raw = [create_role()]
+        # when
+        roles = RolesSet(roles_raw)
+        # then
         self.assertListEqual(list(roles), roles_raw)
 
     def test_can_create_empty(self):
-        roles_raw = []
-        roles = DiscordRoles(roles_raw)
+        # when
+        roles = RolesSet([])
+        # then
         self.assertListEqual(list(roles), [])
 
     def test_raises_exception_if_roles_raw_of_wrong_type(self):
         with self.assertRaises(TypeError):
-            DiscordRoles({'id': 1})
+            RolesSet({"id": 1})
 
     def test_raises_exception_if_list_contains_non_dict(self):
-        roles_raw = [ROLE_ALPHA, 'not_valid']
+        # given
+        roles_raw = [create_role(), "not_valid"]
+        # when/then
         with self.assertRaises(TypeError):
-            DiscordRoles(roles_raw)
-
-    def test_raises_exception_if_invalid_role_1(self):
-        roles_raw = [{'name': 'alpha', 'managed': False}]
-        with self.assertRaises(ValueError):
-            DiscordRoles(roles_raw)
-
-    def test_raises_exception_if_invalid_role_2(self):
-        roles_raw = [{'id': 1, 'managed': False}]
-        with self.assertRaises(ValueError):
-            DiscordRoles(roles_raw)
-
-    def test_raises_exception_if_invalid_role_3(self):
-        roles_raw = [{'id': 1, 'name': 'alpha'}]
-        with self.assertRaises(ValueError):
-            DiscordRoles(roles_raw)
+            RolesSet(roles_raw)
 
     def test_roles_are_equal(self):
-        roles_a = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
-        roles_b = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
+        # given
+        role_a = create_role()
+        role_b = create_role()
+        roles_a = RolesSet([role_a, role_b])
+        roles_b = RolesSet([role_a, role_b])
+        # when/then
         self.assertEqual(roles_a, roles_b)
 
     def test_roles_are_not_equal(self):
-        roles_a = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
-        roles_b = DiscordRoles([ROLE_ALPHA])
+        # given
+        role_a = create_role()
+        role_b = create_role()
+        roles_a = RolesSet([role_a, role_b])
+        roles_b = RolesSet([role_a])
+        # when/then
         self.assertNotEqual(roles_a, roles_b)
 
     def test_different_objects_are_not_equal(self):
-        roles_a = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
+        roles_a = RolesSet([])
         self.assertFalse(roles_a == "invalid")
 
     def test_len(self):
-        self.assertEqual(len(self.all_roles), 4)
+        # given
+        role_a = create_role()
+        role_b = create_role()
+        roles = RolesSet([role_a, role_b])
+        # when/then
+        self.assertEqual(len(roles), 2)
 
     def test_contains(self):
-        self.assertTrue(1 in self.all_roles)
-        self.assertFalse(99 in self.all_roles)
-
-    def test_sanitize_role_name(self):
-        role_name_input = 'x' * 110
-        role_name_expected = 'x' * 100
-        result = DiscordRoles.sanitize_role_name(role_name_input)
-        self.assertEqual(result, role_name_expected)
+        # given
+        role_a = create_role(id=1)
+        roles = RolesSet([role_a])
+        # when/then
+        self.assertTrue(1 in roles)
+        self.assertFalse(99 in roles)
 
     def test_objects_are_hashable(self):
-        roles_a = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
-        roles_b = DiscordRoles([ROLE_BRAVO, ROLE_ALPHA])
-        roles_c = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO, ROLE_MIKE])
+        # given
+        role_a = create_role()
+        role_b = create_role()
+        role_c = create_role()
+        roles_a = RolesSet([role_a, role_b])
+        roles_b = RolesSet([role_b, role_a])
+        roles_c = RolesSet([role_a, role_b, role_c])
+        # when/then
         self.assertIsNotNone(hash(roles_a))
         self.assertEqual(hash(roles_a), hash(roles_b))
         self.assertNotEqual(hash(roles_a), hash(roles_c))
 
     def test_create_from_matched_roles(self):
+        role_a = create_role()
+        role_b = create_role()
         matched_roles = [
-            (ROLE_ALPHA, True),
-            (ROLE_BRAVO, False)
+            create_matched_role(role_a, True),
+            create_matched_role(role_b, False),
         ]
-        roles = DiscordRoles.create_from_matched_roles(matched_roles)
-        self.assertSetEqual(roles.ids(), {1, 2})
-
-
-class TestIds(TestCase):
-
-    def setUp(self):
-        self.all_roles = DiscordRoles(ALL_ROLES)
+        # when
+        roles = RolesSet.create_from_matched_roles(matched_roles)
+        # then
+        self.assertEqual(roles, RolesSet([role_a, role_b]))
 
     def test_return_role_ids_default(self):
-        result = self.all_roles.ids()
-        expected = {1, 2, 3, 13}
-        self.assertSetEqual(result, expected)
+        role_a = create_role(id=1)
+        role_b = create_role(id=2)
+        roles = RolesSet([role_a, role_b])
+        # when/then
+        self.assertSetEqual(roles.ids(), {1, 2})
 
     def test_return_role_ids_empty(self):
-        roles = DiscordRoles([])
+        # given
+        roles = RolesSet([])
+        # when/then
         self.assertSetEqual(roles.ids(), set())
 
 
-class TestSubset(TestCase):
-
-    def setUp(self):
-        self.all_roles = DiscordRoles(ALL_ROLES)
-
+class TestRolesSetSubset(NoSocketsTestCase):
     def test_ids_only(self):
-        role_ids = {1, 3}
-        roles_subset = self.all_roles.subset(role_ids)
-        expected = {1, 3}
-        self.assertSetEqual(roles_subset.ids(), expected)
+        # given
+        role_a = create_role(id=1)
+        role_b = create_role(id=2)
+        role_c = create_role(id=3)
+        roles_all = RolesSet([role_a, role_b, role_c])
+        # when
+        roles_subset = roles_all.subset({1, 3})
+        # then
+        self.assertEqual(roles_subset, RolesSet([role_a, role_c]))
 
     def test_ids_as_string_work_too(self):
-        role_ids = {'1', '3'}
-        roles_subset = self.all_roles.subset(role_ids)
-        expected = {1, 3}
-        self.assertSetEqual(roles_subset.ids(), expected)
+        # given
+        role_a = create_role(id=1)
+        role_b = create_role(id=2)
+        role_c = create_role(id=3)
+        roles_all = RolesSet([role_a, role_b, role_c])
+        # when
+        roles_subset = roles_all.subset({"1", "3"})
+        # then
+        self.assertEqual(roles_subset, RolesSet([role_a, role_c]))
 
     def test_managed_only(self):
-        roles = self.all_roles.subset(managed_only=True)
-        expected = {13}
-        self.assertSetEqual(roles.ids(), expected)
+        # given
+        role_a = create_role(id=1)
+        role_m = create_role(id=13, managed=True)
+        roles_all = RolesSet([role_a, role_m])
+        # when
+        roles_subset = roles_all.subset(managed_only=True)
+        # then
+        self.assertEqual(roles_subset, RolesSet([role_m]))
 
     def test_ids_and_managed_only(self):
-        role_ids = {1, 3, 13}
-        roles_subset = self.all_roles.subset(role_ids, managed_only=True)
-        expected = {13}
-        self.assertSetEqual(roles_subset.ids(), expected)
+        # given
+        role_a = create_role(id=1)
+        role_b = create_role(id=2)
+        role_m = create_role(id=13, managed=True)
+        roles_all = RolesSet([role_a, role_b, role_m])
+        # when
+        roles_subset = roles_all.subset({1, 13}, managed_only=True)
+        # then
+        self.assertEqual(roles_subset, RolesSet([role_m]))
 
     def test_ids_are_empty(self):
-        roles = self.all_roles.subset([])
-        expected = set()
-        self.assertSetEqual(roles.ids(), expected)
+        # given
+        role_a = create_role(id=1)
+        role_b = create_role(id=2)
+        roles_all = RolesSet([role_a, role_b])
+        roles_subset = roles_all.subset([])
+        # then
+        self.assertEqual(roles_subset, RolesSet([]))
 
     def test_no_parameters(self):
-        roles = self.all_roles.subset()
-        expected = {1, 2, 3, 13}
-        self.assertSetEqual(roles.ids(), expected)
+        # given
+        role_a = create_role(id=1)
+        role_b = create_role(id=2)
+        roles_all = RolesSet([role_a, role_b])
+        roles_subset = roles_all.subset()
+        # then
+        self.assertEqual(roles_subset, roles_all)
 
     def test_should_return_role_names_only(self):
         # given
-        all_roles = DiscordRoles([
-            ROLE_ALPHA, ROLE_BRAVO, ROLE_CHARLIE, ROLE_MIKE, ROLE_CHARLIE_2
-        ])
+        role_a = create_role(name="alpha")
+        role_b = create_role(name="bravo")
+        role_c1 = create_role(name="charlie")
+        role_c2 = create_role(name="Charlie")
+        roles_all = RolesSet([role_a, role_b, role_c1, role_c2])
         # when
-        roles = all_roles.subset(role_names={"bravo", "charlie"})
+        roles_subset = roles_all.subset(role_names={"bravo", "charlie"})
         # then
-        self.assertSetEqual(roles.ids(), {2, 3, 4})
+        self.assertSetEqual(roles_subset, RolesSet([role_b, role_c1, role_c2]))
 
 
-class TestHasRoles(TestCase):
-
-    def setUp(self):
-        self.all_roles = DiscordRoles(ALL_ROLES)
+class TestRolesSetHasRoles(NoSocketsTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        role_a = create_role(id=1)
+        role_b = create_role(id=2)
+        role_c = create_role(id=3)
+        cls.all_roles = RolesSet([role_a, role_b, role_c])
 
     def test_true_if_all_roles_exit(self):
         self.assertTrue(self.all_roles.has_roles([1, 2]))
 
     def test_true_if_all_roles_exit_str(self):
-        self.assertTrue(self.all_roles.has_roles(['1', '2']))
+        self.assertTrue(self.all_roles.has_roles(["1", "2"]))
 
     def test_false_if_role_does_not_exit(self):
         self.assertFalse(self.all_roles.has_roles([99]))
@@ -175,75 +207,104 @@ class TestHasRoles(TestCase):
         self.assertTrue(self.all_roles.has_roles([]))
 
 
-class TestGetMatchingRolesByName(TestCase):
-
-    def setUp(self):
-        self.all_roles = DiscordRoles(ALL_ROLES)
-
+class TestRolesSetGetMatchingRolesByName(NoSocketsTestCase):
     def test_return_role_if_matches(self):
-        role_name = 'alpha'
-        expected = ROLE_ALPHA
-        result = self.all_roles.role_by_name(role_name)
-        self.assertEqual(result, expected)
+        # given
+        role_a = create_role(name="alpha")
+        role_b = create_role(name="bravo")
+        roles = RolesSet([role_a, role_b])
+        # when
+        result = roles.role_by_name("alpha")
+        # then
+        self.assertEqual(result, role_a)
 
     def test_return_role_if_matches_and_limit_max_length(self):
-        role_name = 'x' * 120
-        expected = create_role(77, 'x' * 100)
-        roles = DiscordRoles([expected])
+        # given
+        role_name = "x" * 120
+        role = create_role(name="x" * 100)
+        roles = RolesSet([role])
+        # when
         result = roles.role_by_name(role_name)
-        self.assertEqual(result, expected)
+        # then
+        self.assertEqual(result, role)
 
     def test_return_empty_if_not_matches(self):
-        role_name = 'lima'
-        expected = {}
-        result = self.all_roles.role_by_name(role_name)
-        self.assertEqual(result, expected)
+        # given
+        role_a = create_role(name="alpha")
+        role_b = create_role(name="bravo")
+        roles = RolesSet([role_a, role_b])
+        # when
+        result = roles.role_by_name("unknown")
+        # then
+        self.assertIsNone(result)
 
 
-class TestUnion(TestCase):
-
+class TestRolesSetUnion(NoSocketsTestCase):
     def test_distinct_sets(self):
-        roles_1 = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
-        roles_2 = DiscordRoles([ROLE_CHARLIE, ROLE_MIKE])
-        roles_3 = roles_1.union(roles_2)
-        expected = DiscordRoles(
-            [ROLE_ALPHA, ROLE_BRAVO, ROLE_CHARLIE, ROLE_MIKE])
-        self.assertEqual(roles_3, expected)
+        # given
+        role_a = create_role()
+        role_b = create_role()
+        roles_1 = RolesSet([role_a])
+        roles_2 = RolesSet([role_b])
+        # when
+        result = roles_1.union(roles_2)
+        # then
+        self.assertEqual(result, RolesSet([role_a, role_b]))
 
     def test_overlapping_sets(self):
-        roles_1 = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
-        roles_2 = DiscordRoles([ROLE_BRAVO, ROLE_MIKE])
-        roles_3 = roles_1.union(roles_2)
-        expected = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO, ROLE_MIKE])
-        self.assertEqual(roles_3, expected)
+        # given
+        role_a = create_role()
+        role_b = create_role()
+        role_c = create_role()
+        roles_1 = RolesSet([role_a, role_b])
+        roles_2 = RolesSet([role_b, role_c])
+        # when
+        result = roles_1.union(roles_2)
+        self.assertEqual(result, RolesSet([role_a, role_b, role_c]))
 
     def test_identical_sets(self):
-        roles_1 = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
-        roles_2 = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
-        roles_3 = roles_1.union(roles_2)
-        expected = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
-        self.assertEqual(roles_3, expected)
+        role_a = create_role()
+        role_b = create_role()
+        roles_1 = RolesSet([role_a, role_b])
+        roles_2 = RolesSet([role_a, role_b])
+        # when
+        result = roles_1.union(roles_2)
+        self.assertEqual(result, RolesSet([role_a, role_b]))
 
 
-class TestDifference(TestCase):
-
+class TestRolesSetDifference(NoSocketsTestCase):
     def test_distinct_sets(self):
-        roles_1 = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
-        roles_2 = DiscordRoles([ROLE_CHARLIE, ROLE_MIKE])
-        roles_3 = roles_1.difference(roles_2)
-        expected = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
-        self.assertEqual(roles_3, expected)
+        # given
+        role_a = create_role()
+        role_b = create_role()
+        role_c = create_role()
+        role_d = create_role()
+        roles_1 = RolesSet([role_a, role_b])
+        roles_2 = RolesSet([role_c, role_d])
+        # when
+        result = roles_1.difference(roles_2)
+        # then
+        self.assertEqual(result, RolesSet([role_a, role_b]))
 
     def test_overlapping_sets(self):
-        roles_1 = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
-        roles_2 = DiscordRoles([ROLE_BRAVO, ROLE_MIKE])
-        roles_3 = roles_1.difference(roles_2)
-        expected = DiscordRoles([ROLE_ALPHA])
-        self.assertEqual(roles_3, expected)
+        # given
+        role_a = create_role()
+        role_b = create_role()
+        role_c = create_role()
+        roles_1 = RolesSet([role_a, role_b])
+        roles_2 = RolesSet([role_b, role_c])
+        # when
+        result = roles_1.difference(roles_2)
+        # then
+        self.assertEqual(result, RolesSet([role_a]))
 
     def test_identical_sets(self):
-        roles_1 = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
-        roles_2 = DiscordRoles([ROLE_ALPHA, ROLE_BRAVO])
-        roles_3 = roles_1.difference(roles_2)
-        expected = DiscordRoles([])
-        self.assertEqual(roles_3, expected)
+        # given
+        role_a = create_role()
+        role_b = create_role()
+        roles_1 = RolesSet([role_a, role_b])
+        roles_2 = RolesSet([role_a, role_b])
+        # when
+        result = roles_1.difference(roles_2)
+        # then
+        self.assertEqual(result, RolesSet([]))

@@ -1,0 +1,155 @@
+{
+    "guilds": {
+        "2909267986263572999": {
+            "id": "2909267986263572999",
+            "name": "Mason's Test Server",
+            "icon": "389030ec9db118cb5b85a732333b7c98",
+            "description": null,
+            "splash": "75610b05a0dd09ec2c3c7df9f6975ea0",
+            "discovery_splash": null,
+            "approximate_member_count": 2,
+            "approximate_presence_count": 2,
+            "features": [
+                "INVITE_SPLASH",
+                "VANITY_URL",
+                "COMMERCE",
+                "BANNER",
+                "NEWS",
+                "VERIFIED",
+                "VIP_REGIONS"
+            ],
+            "emojis": [
+                {
+                    "name": "ultrafastparrot",
+                    "roles": [],
+                    "id": "393564762228785161",
+                    "require_colons": true,
+                    "managed": false,
+                    "animated": true,
+                    "available": true
+                }
+            ],
+            "banner": "5c3cb8d1bc159937fffe7e641ec96ca7",
+            "owner_id": "53908232506183680",
+            "application_id": null,
+            "region": null,
+            "afk_channel_id": null,
+            "afk_timeout": 300,
+            "system_channel_id": null,
+            "widget_enabled": true,
+            "widget_channel_id": "639513352485470208",
+            "verification_level": 0,
+            "roles": [
+                {
+                    "id": "2909267986263572999",
+                    "name": "@everyone",
+                    "permissions": "49794752",
+                    "position": 0,
+                    "color": 0,
+                    "hoist": false,
+                    "managed": false,
+                    "mentionable": false
+                }
+            ],
+            "default_message_notifications": 1,
+            "mfa_level": 0,
+            "explicit_content_filter": 0,
+            "max_presences": null,
+            "max_members": 250000,
+            "max_video_channel_users": 25,
+            "vanity_url_code": "no",
+            "premium_tier": 0,
+            "premium_subscription_count": 0,
+            "system_channel_flags": 0,
+            "preferred_locale": "en-US",
+            "rules_channel_id": null,
+            "public_updates_channel_id": null
+        }
+    },
+    "guildMembers": {
+        "1": {
+            "user": {},
+            "nick": null,
+            "avatar": null,
+            "roles": [],
+            "joined_at": "2015-04-26T06:26:56.936000+00:00",
+            "deaf": false,
+            "mute": false
+        },
+        "2": {
+            "user": {
+                "id": "80351110224678912",
+                "username": "Nelly",
+                "discriminator": "1337",
+                "avatar": "8342729096ea3675442027381ff50dfe",
+                "verified": true,
+                "email": "nelly@discord.com",
+                "flags": 64,
+                "banner": "06c16474723fe537c283b8efa61a30c8",
+                "accent_color": 16711680,
+                "premium_type": 1,
+                "public_flags": 64
+            },
+            "nick": "Nelly the great",
+            "avatar": null,
+            "roles": [
+                "197150972374548480",
+                "41771983423143936"
+            ],
+            "joined_at": "2015-04-26T06:26:56.936000+00:00",
+            "deaf": false,
+            "mute": false
+        }
+    },
+    "roles": {
+        "197150972374548480": {
+            "id": "197150972374548480",
+            "name": "My Managed Role",
+            "color": 3447003,
+            "hoist": false,
+            "icon": "cf3ced8600b777c9486c6d8d84fb4327",
+            "unicode_emoji": null,
+            "position": 2,
+            "permissions": "66321471",
+            "managed": true,
+            "mentionable": false
+        },
+        "2909267986263572999": {
+            "id": "2909267986263572999",
+            "name": "@everyone",
+            "permissions": "49794752",
+            "position": 0,
+            "color": 0,
+            "hoist": false,
+            "managed": false,
+            "mentionable": false
+        },
+        "41771983423143936": {
+            "id": "41771983423143936",
+            "name": "WE DEM BOYZZ!!!!!!",
+            "color": 3447003,
+            "hoist": true,
+            "icon": "cf3ced8600b777c9486c6d8d84fb4327",
+            "unicode_emoji": null,
+            "position": 1,
+            "permissions": "66321471",
+            "managed": false,
+            "mentionable": false
+        }
+    },
+    "users": {
+        "80351110224678912": {
+            "id": "80351110224678912",
+            "username": "Nelly",
+            "discriminator": "1337",
+            "avatar": "8342729096ea3675442027381ff50dfe",
+            "verified": true,
+            "email": "nelly@discord.com",
+            "flags": 64,
+            "banner": "06c16474723fe537c283b8efa61a30c8",
+            "accent_color": 16711680,
+            "premium_type": 1,
+            "public_flags": 64
+        }
+    }
+}
