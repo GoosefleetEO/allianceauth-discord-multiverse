@@ -270,8 +270,8 @@ class MultiDiscordUserManager(models.Manager):
                     guild=guild,
                     defaults={
                         'uid': user_id,
-                        'username': discord_user['username'][:32],
-                        'discriminator': discord_user['discriminator'][:4],
+                        'username': discord_user.username[:32],
+                        'discriminator': discord_user.discriminator[:4],
                         'activated': now()
                     }
                 )

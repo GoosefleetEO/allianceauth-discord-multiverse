@@ -257,11 +257,11 @@ class MultiDiscordUser(models.Model):
         elif (
             user_info
             and 'user' in user_info
-            and 'username' in user_info['user']
-            and 'discriminator' in user_info['user']
+            and user_info.username
+            and user_info.discriminator
         ):
-            self.username = user_info['user']['username']
-            self.discriminator = user_info['user']['discriminator']
+            self.username = user_info['user'].username
+            self.discriminator = user_info['user'].discriminator
             self.save()
             logger.info('Username for %s has been updated', self.user)
             success = True
