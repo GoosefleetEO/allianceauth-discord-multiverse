@@ -1,4 +1,4 @@
-# Discord Multiverse
+# Discord Multiverse (Goose Edition)
 
 Service module for managing an unlimited number of discord servers from a single auth instance. It can run side by side with the core auth discord service, or completely standalone.
 
@@ -6,30 +6,17 @@ Most of the code is borrowed from Alliance Auth's core Discord Service Module[li
 
 Active Devs:
 
-- [AaronKable](https://github.com/pvyParts)
+- [corgski](https://github.com/digital-pet)
 
 ```diff
 -                 THIS APPLICATION IS NOT PRODUCTION READY
 ```
 
-MID PRIO:
-
-- TODO: Check the performance with massive servers/counts...
-- TODO: ensure no cache conflicts
-- TODO: Instructions and documentation
-- TODO: Maybe custom client/secrets at a server level?
-
-HIGH PRIO!
-
-- TODO: Check AuthBot to see what it does.
-
 ### Installation
 
 1.  pip install `package`
 2.  Add `'aadiscordmultiverse',` to your `INSTALLED_APPS` in your projects `local.py`
-    #TODO add redirect to sso app
-    #TODO add settings for redirect or make it auto
-    #TODO add the other step...
+3.  Configure settings in local.py (TODO: what settings?)
 3.  Run migrations, collectstatic and restart auth.
 4.  Setup your permissions as documented below
 
