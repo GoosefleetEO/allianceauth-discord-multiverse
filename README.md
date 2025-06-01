@@ -8,6 +8,8 @@ Active Devs:
 
 - [corgski](https://github.com/digital-pet)
 
+Forked from Solar-Helix-Independent-Transport/allianceauth-discord-multiverse by [AaronKable](https://github.com/pvyParts)
+
 ```diff
 -                 THIS APPLICATION IS NOT PRODUCTION READY
 ```
