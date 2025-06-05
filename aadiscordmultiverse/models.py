@@ -369,10 +369,10 @@ class ServerActiveFilter(FilterBase):
             guild = self.server,
             user__in = users
         )
-        output = defaultdict(lambda: {"message": "", "check": logic})
+        output = defaultdict(lambda: {"message": "-", "check": logic})
         for a in accounts:
             output[a.user_id] = {
-                "message": "Active", "check": not logic
+                "message": a.username, "check": not logic
             }
         return output
 
