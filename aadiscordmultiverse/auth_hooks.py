@@ -91,7 +91,7 @@ class MultiDiscordService(ServicesHook):
                     'user_pk': user.pk,
                     # since the new nickname is not yet in the DB we need to
                     # provide it manually to the task
-                    'nickname': MultiDiscordUser.objects.user_formatted_nick(user)
+                    'nickname': MultiDiscordUser.objects.user_formatted_nick(user, self.guild_id)
                 },
                 priority=SINGLE_TASK_PRIORITY
             )
