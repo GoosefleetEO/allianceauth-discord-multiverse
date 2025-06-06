@@ -21,8 +21,6 @@ from .core import calculate_roles_for_user, create_bot_client
 from .core import group_to_role as core_group_to_role
 from .core import server_name as core_server_name
 
-from .models import DiscordManagedServer
-
 logger = logging.getLogger(__name__)
 
 
@@ -291,7 +289,7 @@ class MultiDiscordUserManager(models.Manager):
             return False
 
     @staticmethod
-    def user_formatted_nick(user: User, guild: DiscordManagedServer) -> str:
+    def user_formatted_nick(user: User, guild) -> str:
         """returns the name of the given users main character with name formatting
         or None if user has no main
         """
